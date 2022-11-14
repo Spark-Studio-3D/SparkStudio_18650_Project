@@ -7,11 +7,11 @@
    	
 
 	Version:                1.0
-	Creation Date:          
+	Creation Date:          10 Nov 2022
 	Modification Date:      
 	Email:                  richard+scad@milewski.org
 	Copyright 				©2022 by Richard A. Milewski
-    License - CC-BY-NC      https://creativecommons.org/licenses/by-nc/3.0/ 
+    License                 Mozilla Public License v2.0
 
 \*#################################################################################*/
 
