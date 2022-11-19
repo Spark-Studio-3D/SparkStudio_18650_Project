@@ -69,22 +69,24 @@ internal_wall = [-ibox.x/2 + pcb.x + wall/2, 0, floor];
 pcb_center = [-ibox.x/2 + pcb.x/2, 0, floor + pcb_lift + pcb.z/2];
 pcb_ctr_left = pcb_center + [-pcb.x/2 , 0, 0];
 pcb_back_left = pcb_ctr_left + [0, pcb.y/2, 0];
+pcb_back_left_floor = pcb_back_left + [0, 0, -(pcb_lift + pcb.z/2)];
 pcb_front_left = pcb_ctr_left + [0, -pcb.y/2, 0];
+pcb_front_left_floor = pcb_front_left + [0, 0, -(pcb_lift + pcb.z/2)];
 pcb_top = pcb_center + [0, 0, pcb.z/2];
 pcb_bot = pcb_center + [0, 0, -pcb.z/2];
 
 pcb_hole = 1.7;
 pcb_post = [4, -5, pcb_lift]; // d, rounding, l
-pcb_front_post_loc = pcb_front_left + [11 + pcb_hole/2, 4.65 + pcb_hole/2, -(pcb_lift + pcb.z/2)];
-pcb_back_post_loc = pcb_back_left + [13 + pcb_hole/2, -(9.25 + pcb_hole/2), -(pcb_lift + pcb.z/2)];
+pcb_front_post_loc = pcb_front_left_floor + [11 + pcb_hole/2, 4.65 + pcb_hole/2, 0];
+pcb_back_post_loc = pcb_back_left_floor + [13 + pcb_hole/2, -(9.25 + pcb_hole/2), 0];
 
-pcb_support = [4, 4, pcb_lift];
-pcb_front_support_loc = [pcb_front_left.x + 2, pcb_front_left.y + 2.2, floor];
-pcb_back_support_loc = [pcb_back_left.x + 2, pcb_back_left.y - 2.2, floor];
+pcb_support = [4, 4.5, pcb_lift];
+pcb_front_support_loc = pcb_front_left_floor + [2,  1.5, 0];
+pcb_back_support_loc  = pcb_back_left_floor  + [2, -1.5, 0];
 
 pcb_stop = [8, 2, pcb_lift + 4];
-pcb_front_stop_loc = pcb_front_support_loc + [0, -3, 0];
-pcb_back_stop_loc = pcb_back_support_loc + [0, +3, 0];
+pcb_front_stop_loc = pcb_front_left_floor + [2, -1.25, 0];
+pcb_back_stop_loc  = pcb_back_left_floor  + [2,  1.25, 0];
 
 battery_center = [ibox.x/2 - battery_space.x/2, 0, buffer + battery.z/2];
 
@@ -93,14 +95,20 @@ battery_center = [ibox.x/2 - battery_space.x/2, 0, buffer + battery.z/2];
 // usbC and lightning connectors centered under usbA connectors
 led = [11, 6, 6];
 led_loc = pcb_back_left + [0, -6.85, led.z/2];
+
 usbA = [10.2, 13.5, 6];
 usbAlift = 1.44; //connector height above pcb
 usbA_loc1 =  pcb_back_left + [0, -12.75 - usbA.y/2, usbA.z/2 + usbAlift];
 usbA_loc2 =  pcb_front_left + [0, 8.5 + usbA.y/2, usbA.z/2 + usbAlift];
+
 usbC = [7.5, 9.2, 3.3];
 usbC_loc =  [usbA_loc1.x, usbA_loc1.y , pcb_bot.z - usbC.z/2]; 
+
 lightning = [8.73, 10, 3.5];
 lightning_loc = [usbA_loc2.x, usbA_loc2.y, pcb_bot.z - lightning.z/2]; 
+
+buttonhole = [4, 4, 4];
+buttonhole_loc = [-ibox.x/2, ibox.y/2, pcb_center.z] + [17.5, wall/2, 0];
 
 /*#################################################################################*\
     
@@ -117,7 +125,7 @@ if (part == "lid") {
 
 if (part == "test") {
     left_half(s = 200, x = -40)
-    bottom_half(s = 200, z = box.z * .7)
+    bottom_half(s = 200, z = box.z * .85)
     box();
 }
 
@@ -154,6 +162,7 @@ module shell() {
                 move(usbA_loc2) cuboid([usbA.x, usbA.y, usbA.z], rounding = 1, edges = "X");
                 move(usbC_loc) cuboid([usbC.x, usbC.y, usbC.z], rounding = 0.5, edges = "X");
                 move(lightning_loc) cuboid(lightning, rounding = 0.5, edges = "X");
+                move(buttonhole_loc) cuboid(buttonhole, rounding = 1, edges = "Y");           
             }
         }
     }
