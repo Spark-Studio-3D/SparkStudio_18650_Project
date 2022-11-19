@@ -9,7 +9,7 @@
 	Version:                1.0
 	Creation Date:          10 Nov 2022
 	Modification Date:      
-	Email:                  richard+scad@milewski.org
+	Email:                  richard+spark@milewski.org
 	Copyright 				©2022 by Richard A. Milewski
     License                 Mozilla Public License v2.0
 
@@ -66,15 +66,26 @@ screw_hole = 2.5; //dia
 // Key Locations
 pcb_lift = floor + 6; 
 internal_wall = [-ibox.x/2 + pcb.x + wall/2, 0, floor]; 
-connectors = [-box.x/2, 0, box.z/2];
 pcb_center = [-ibox.x/2 + pcb.x/2, 0, floor + pcb_lift + pcb.z/2];
 pcb_ctr_left = pcb_center + [-pcb.x/2 , 0, 0];
 pcb_back_left = pcb_ctr_left + [0, pcb.y/2, 0];
 pcb_front_left = pcb_ctr_left + [0, -pcb.y/2, 0];
 pcb_top = pcb_center + [0, 0, pcb.z/2];
 pcb_bot = pcb_center + [0, 0, -pcb.z/2];
+
 pcb_hole = 1.7;
 pcb_post = [4, -5, pcb_lift]; // d, rounding, l
+pcb_front_post_loc = pcb_front_left + [11 + pcb_hole/2, 4.65 + pcb_hole/2, -(pcb_lift + pcb.z/2)];
+pcb_back_post_loc = pcb_back_left + [13 + pcb_hole/2, -(9.25 + pcb_hole/2), -(pcb_lift + pcb.z/2)];
+
+pcb_support = [4, 4, pcb_lift];
+pcb_front_support_loc = [pcb_front_left.x + 2, pcb_front_left.y + 2.2, floor];
+pcb_back_support_loc = [pcb_back_left.x + 2, pcb_back_left.y - 2.2, floor];
+
+pcb_stop = [8, 2, pcb_lift + 4];
+pcb_front_stop_loc = pcb_front_support_loc + [0, -3, 0];
+pcb_back_stop_loc = pcb_back_support_loc + [0, +3, 0];
+
 battery_center = [ibox.x/2 - battery_space.x/2, 0, buffer + battery.z/2];
 
 
@@ -82,18 +93,14 @@ battery_center = [ibox.x/2 - battery_space.x/2, 0, buffer + battery.z/2];
 // usbC and lightning connectors centered under usbA connectors
 led = [11, 6, 6];
 led_loc = pcb_back_left + [0, -6.85, led.z/2];
-usbA = [13.25, 10.2, 5.7];
+usbA = [10.2, 13.5, 6];
 usbAlift = 1.44; //connector height above pcb
-usbA_loc1 =  pcb_back_left + [0, -15 - usbA.y/2, usbA.z/2 + usbAlift];
+usbA_loc1 =  pcb_back_left + [0, -12.75 - usbA.y/2, usbA.z/2 + usbAlift];
 usbA_loc2 =  pcb_front_left + [0, 8.5 + usbA.y/2, usbA.z/2 + usbAlift];
-usbC = [7.5, 9.2, 3.07];
+usbC = [7.5, 9.2, 3.3];
 usbC_loc =  [usbA_loc1.x, usbA_loc1.y , pcb_bot.z - usbC.z/2]; 
-lightning = [8.73, 9.8, 3.4];
+lightning = [8.73, 10, 3.5];
 lightning_loc = [usbA_loc2.x, usbA_loc2.y, pcb_bot.z - lightning.z/2]; 
-pcb_front_post_loc = pcb_front_left + [11 + pcb_hole/2, 4.65 + pcb_hole/2, -pcb_lift];
-pcb_back_post_loc = pcb_back_left + [13 + pcb_hole/2, -(11.25 + pcb_hole/2), -pcb_lift];
-
-
 
 /*#################################################################################*\
     
@@ -138,8 +145,8 @@ module floor() {
 module shell() {
     floor();
     difference() {
-        up(floor) rect_tube(h = box.z, size = [box.x, box.y], wall = wall, rounding = corner, irounding = icorner2, anchor = BOT);
-    //shell holes
+       up(floor) rect_tube(h = box.z, size = [box.x, box.y], wall = wall, rounding = corner, irounding = icorner2, anchor = BOT);
+       //shell holes
         union() {
             color("red") {
                 move(led_loc) xcyl(d = led.z, l = led.x);
@@ -153,14 +160,18 @@ module shell() {
     color("dodgerblue") {
         difference() {
             union () {
-                move (pcb_back_post_loc) cyl(h = pcb_post.z, d = pcb_post.x, rounding1 = pcb_post.y, anchor = BOT);
                 move (pcb_front_post_loc) cyl(h = pcb_post.z, d = pcb_post.x, rounding1 = pcb_post.y, anchor = BOT);
-            }
+                move (pcb_back_post_loc)  cyl(h = pcb_post.z, d = pcb_post.x, rounding1 = pcb_post.y, anchor = BOT);
+                }
             union() {
                 move(pcb_back_post_loc) cyl(h=pcb_post.z, d = pcb_hole, anchor = BOT);
                 move(pcb_front_post_loc) cyl(h=pcb_post.z, d = pcb_hole, anchor = BOT);
             }
         }
+        move (pcb_front_support_loc) cuboid(pcb_support, anchor = BOT);
+        move (pcb_back_support_loc)  cuboid(pcb_support, anchor = BOT);
+        move (pcb_front_stop_loc) cuboid(pcb_stop, anchor = BOT);
+        move (pcb_back_stop_loc)  cuboid(pcb_stop, anchor = BOT);
     }
 }
 
