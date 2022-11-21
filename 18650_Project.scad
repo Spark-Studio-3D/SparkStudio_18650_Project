@@ -32,7 +32,7 @@ include <BOSL2/std.scad>
 
 $fn = 72;
 
-part = "box";   // [box, lid, test]
+part = "test";   // [box, lid, button, test]
 
 battery_count = 6;
 buffer = 5;
@@ -99,7 +99,7 @@ battery_center = [ibox.x/2 - battery_space.x/2, 0, buffer + battery.z/2];
 led = [11, 5, 5];
 led_loc = pcb_back_left + [0, -6.85, led.z/2 - 1];
 led2 = [4, 17, floor + 1];
-led2_loc = pcb_back_post_loc + [0, -(led2.y/2 + 9.5), -(floor + 0.1)]; 
+led2_loc = pcb_back_post_loc + [0, -(led2.y/2 + 7.5), -(floor + 0.1)]; 
 
 usbA = [10.2, 13.5, 6];
 usbAlift = 1.44; //connector height above pcb
@@ -114,6 +114,13 @@ lightning_loc = [usbA_loc2.x, usbA_loc2.y, pcb_bot.z - lightning.z/2];
 
 buttonhole = [4, 6, 4];
 buttonhole_loc = [-ibox.x/2 + 19.5, ibox.y/2, pcb_center.z];
+button = [3.5, 13, 3.5];
+button_support = [8, 4, pcb_lift + 2.75];
+button_support_loc = [-ibox.x/2 + 19.5, pcb_back_left.y + 4, floor];
+button_channel = [4.1, 12, 4.1];
+button_channel_loc = button_support_loc + [0, 0, pcb_lift - pcb.z] ;
+
+echo2([button_channel_loc]);
 
 /*#################################################################################*\
     
@@ -124,12 +131,16 @@ if (part == "box") {
     box();
 }
 
+if (part == "button") {
+    button();
+}
+
 if (part == "lid") {
    lid();
 }
 
 if (part == "test") {
-    left_half(s = 200, x = internal_wall_loc.x + wall + 1)
+    left_half(s = 200, x = internal_wall_loc.x + 2)
     bottom_half(s = 200, z = box.z * .75)
     box();
 }
@@ -150,6 +161,10 @@ module box() {
     if ($preview && part != "test") pcb(false);
     //pcb(false);
     
+}
+
+module button() {
+    cuboid(button, rounding = 1.5, edges = BACK);
 }
 
 module floor() {
@@ -198,6 +213,11 @@ module shell() {
         
         move (pcb_front_stop_loc) cuboid(pcb_stop, anchor = BOT);
         move (pcb_back_stop_loc)  cuboid(pcb_stop, anchor = BOT);
+
+        difference() {
+            move (button_support_loc) cuboid(button_support, anchor = BOT);
+            move (button_channel_loc) color("red") cuboid(button_channel, anchor = BOT);
+        }
     }
 }
 
