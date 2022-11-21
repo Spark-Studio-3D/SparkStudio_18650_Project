@@ -44,7 +44,7 @@ module hide_variables () {}  // variables below hidden from Customizer
 
 2buffer = buffer*2;
 battery = [18, 65, 18];
-pcb = [30, 53.5, 1.25];
+pcb = [30, 53.5, 1.3];
 pcb_box = [30, 54, 11.4];
 
 
@@ -61,11 +61,11 @@ stacker = [box.x, box.y, buffer];
 
 screw_post = [6, undef, stacker.z]; // post_dia, undef, post.z
 screw_spacing = [ibox.x - wall - 5, ibox.y - wall - 5];
-screw_hole = 2.5; //dia
+screw_hole = 2; //dia
 
 // Key Locations
-pcb_lift = floor + 6; 
-internal_wall = [-ibox.x/2 + pcb.x + wall/2, 0, floor]; 
+pcb_lift = floor + 3; 
+internal_wall_loc = [-ibox.x/2 + pcb.x + wall/2 + 1, 0, floor]; 
 pcb_center = [-ibox.x/2 + pcb.x/2, 0, floor + pcb_lift + pcb.z/2];
 pcb_ctr_left = pcb_center + [-pcb.x/2 , 0, 0];
 pcb_back_left = pcb_ctr_left + [0, pcb.y/2, 0];
@@ -76,13 +76,16 @@ pcb_top = pcb_center + [0, 0, pcb.z/2];
 pcb_bot = pcb_center + [0, 0, -pcb.z/2];
 
 pcb_hole = 1.7;
-pcb_post = [4, -5, pcb_lift]; // d, rounding, l
-pcb_front_post_loc = pcb_front_left_floor + [11 + pcb_hole/2, 4.65 + pcb_hole/2, 0];
-pcb_back_post_loc = pcb_back_left_floor + [13 + pcb_hole/2, -(9.25 + pcb_hole/2), 0];
+pcb_post = [5, undef, pcb_lift]; // d, undef, l
+pcb_post_rounding = [-3, 1.5];     // rounding1, rounding2
+pcb_front_post_loc = pcb_front_left_floor + [10 + pcb_hole/2, 3.65 + pcb_hole/2, 0];
+pcb_back_post_loc = pcb_back_left_floor + [13 + pcb_hole/2, -(10.25 + pcb_hole/2), 0];
 
 pcb_support = [4, 4.5, pcb_lift];
 pcb_front_support_loc = pcb_front_left_floor + [2,  1.5, 0];
 pcb_back_support_loc  = pcb_back_left_floor  + [2, -1.5, 0];
+pcb_right_support = [ 5, 5, pcb_lift]; 
+pcb_right_support_loc = pcb_back_left_floor  + [pcb.x - 5, -10, 0]; 
 
 pcb_stop = [8, 2, pcb_lift + 4];
 pcb_front_stop_loc = pcb_front_left_floor + [2, -1.25, 0];
@@ -93,13 +96,15 @@ battery_center = [ibox.x/2 - battery_space.x/2, 0, buffer + battery.z/2];
 
 // Hole sizes and positions  
 // usbC and lightning connectors centered under usbA connectors
-led = [11, 6, 6];
-led_loc = pcb_back_left + [0, -6.85, led.z/2];
+led = [11, 5, 5];
+led_loc = pcb_back_left + [0, -6.85, led.z/2 - 1];
+led2 = [4, 17, floor + 1];
+led2_loc = pcb_back_post_loc + [0, -(led2.y/2 + 9.5), -(floor + 0.1)]; 
 
 usbA = [10.2, 13.5, 6];
 usbAlift = 1.44; //connector height above pcb
-usbA_loc1 =  pcb_back_left + [0, -12.75 - usbA.y/2, usbA.z/2 + usbAlift];
-usbA_loc2 =  pcb_front_left + [0, 8.5 + usbA.y/2, usbA.z/2 + usbAlift];
+usbA_loc1 =  pcb_back_left + [0, -14.75 - usbA.y/2, usbA.z/2 + usbAlift];
+usbA_loc2 =  pcb_front_left + [0, 7.5 + usbA.y/2, usbA.z/2 + usbAlift];
 
 usbC = [7.5, 9.2, 3.3];
 usbC_loc =  [usbA_loc1.x, usbA_loc1.y , pcb_bot.z - usbC.z/2]; 
@@ -107,8 +112,8 @@ usbC_loc =  [usbA_loc1.x, usbA_loc1.y , pcb_bot.z - usbC.z/2];
 lightning = [8.73, 10, 3.5];
 lightning_loc = [usbA_loc2.x, usbA_loc2.y, pcb_bot.z - lightning.z/2]; 
 
-buttonhole = [4, 4, 4];
-buttonhole_loc = [-ibox.x/2, ibox.y/2, pcb_center.z] + [17.5, wall/2, 0];
+buttonhole = [4, 6, 4];
+buttonhole_loc = [-ibox.x/2 + 19.5, ibox.y/2, pcb_center.z];
 
 /*#################################################################################*\
     
@@ -124,8 +129,8 @@ if (part == "lid") {
 }
 
 if (part == "test") {
-    left_half(s = 200, x = -40)
-    bottom_half(s = 200, z = box.z * .85)
+    left_half(s = 200, x = internal_wall_loc.x + wall + 1)
+    bottom_half(s = 200, z = box.z * .75)
     box();
 }
 
@@ -143,6 +148,7 @@ module box() {
     if (part != "test") battery_bay();
     color_this("dodgerblue") stacker_with_posts(true);
     if ($preview && part != "test") pcb(false);
+    //pcb(false);
     
 }
 
@@ -151,16 +157,21 @@ module floor() {
 }
 
 module shell() {
-    floor();
+    
     difference() {
-       up(floor) rect_tube(h = box.z, size = [box.x, box.y], wall = wall, rounding = corner, irounding = icorner2, anchor = BOT);
-       //shell holes
+        union() {
+            floor();
+            up(floor) rect_tube(h = box.z, size = [box.x, box.y], 
+                wall = wall, rounding = corner, irounding = icorner2, anchor = BOT);
+        }
+        //shell holes
         union() {
             color("red") {
                 move(led_loc) xcyl(d = led.z, l = led.x);
-                move(usbA_loc1) cuboid([usbA.x, usbA.y, usbA.z], rounding = 1, edges = "X");
-                move(usbA_loc2) cuboid([usbA.x, usbA.y, usbA.z], rounding = 1, edges = "X");
-                move(usbC_loc) cuboid([usbC.x, usbC.y, usbC.z], rounding = 0.5, edges = "X");
+                move(led2_loc)  cuboid(led2, rounding = 1,   edges = "Z", anchor = BOT);
+                move(usbA_loc1) cuboid(usbA, rounding = 1,   edges = "X");
+                move(usbA_loc2) cuboid(usbA, rounding = 1,   edges = "X");
+                move(usbC_loc)  cuboid(usbC, rounding = 0.5, edges = "X");
                 move(lightning_loc) cuboid(lightning, rounding = 0.5, edges = "X");
                 move(buttonhole_loc) cuboid(buttonhole, rounding = 1, edges = "Y");           
             }
@@ -169,8 +180,12 @@ module shell() {
     color("dodgerblue") {
         difference() {
             union () {
-                move (pcb_front_post_loc) cyl(h = pcb_post.z, d = pcb_post.x, rounding1 = pcb_post.y, anchor = BOT);
-                move (pcb_back_post_loc)  cyl(h = pcb_post.z, d = pcb_post.x, rounding1 = pcb_post.y, anchor = BOT);
+                move (pcb_front_post_loc) 
+                    cyl(h = pcb_post.z, d = pcb_post.x, rounding1 = pcb_post_rounding.x,
+                        rounding2 = pcb_post_rounding.y, anchor = BOT);
+                move (pcb_back_post_loc)  
+                    cyl(h = pcb_post.z, d = pcb_post.x, rounding1 = pcb_post_rounding.x,
+                        rounding2 = pcb_post_rounding.y, anchor = BOT);
                 }
             union() {
                 move(pcb_back_post_loc) cyl(h=pcb_post.z, d = pcb_hole, anchor = BOT);
@@ -179,6 +194,8 @@ module shell() {
         }
         move (pcb_front_support_loc) cuboid(pcb_support, anchor = BOT);
         move (pcb_back_support_loc)  cuboid(pcb_support, anchor = BOT);
+        move (pcb_right_support_loc) cuboid(pcb_right_support, rounding = 2, edges = "Z", anchor = BOT);
+        
         move (pcb_front_stop_loc) cuboid(pcb_stop, anchor = BOT);
         move (pcb_back_stop_loc)  cuboid(pcb_stop, anchor = BOT);
     }
@@ -225,11 +242,11 @@ module battery_bay() {
 
 module internal_wall () {
      difference() {
-        move(internal_wall) color("red") cuboid([wall, ibox.y, ibox.z + stacker.z], anchor = BOT);
+        move(internal_wall_loc) cuboid([wall, ibox.y, ibox.z + stacker.z], anchor = BOT);
         union() {
             move(pcb_center) {   // Wire pass-through holes
-                move([pcb.x/2, pcb.y/2, 3]) xcyl(d = 2.5, h = 5);
-                move([-pcb.x/2, -pcb.y/2, 3]) xcyl(d = 2.5, h = 5);
+                move([pcb.x/2 + wall,   pcb.y/2, 3]) #xcyl(d = 2.5, h = 5);
+                move([pcb.x/2 + wall,  -pcb.y/2, 3]) #xcyl(d = 2.5, h = 5);
             }
         }
      }
@@ -275,11 +292,7 @@ module stacker(is_male) {	// Interface ring to stack box
 module pcb(showbox) {
     volume1 = showbox ? pcb_box : pcb;
     move(pcb_center) {
-        if($preview) color_this("lightgreen") cuboid(volume1, anchor = BOT);
-        // Associated holes in walls
-        move([pcb.x/2, pcb.y/2, 3]) xcyl(d = 2.5, h = 5);
-        move([-pcb.x/2, -pcb.y/2, 3]) xcyl(d = 2.5, h = 5);
-         
+        if($preview) color_this("green") #cuboid(volume1, anchor = BOT);
     }
 }
 
