@@ -4,8 +4,8 @@ This OpenSCAD file renters .stl files for Mike Nolley's 18650 based USB charger 
 
 The box accomodates an IP5328 charge management pcb available from:
 
-        <https://www.aliexpress.us/item/3256801127506668.html?>
-        <https://www.ebay.com/itm/193381612879>
+<https://www.aliexpress.us/item/3256801127506668.html>
+<https://www.ebay.com/itm/193381612879>
 
 ...as well as many other vendors on EBay and AliExpress. Sadly, the manufcturer's name and part number are not in evidence.  Match the image in PCB_Photo.png for positive identification.
 
