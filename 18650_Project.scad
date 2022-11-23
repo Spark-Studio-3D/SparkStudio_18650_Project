@@ -18,10 +18,13 @@
 
 /*#################################################################################*\
     
-    Notes
+    NOTES
+
+    The variable iwall_fudge may need to be adjusted to account for printer
+    over or under extrusion. It should be set to provide a snug fit for the pcb.
+    Decrease it for a tighter fit, increase it to loosen the fit.
 
 \*#################################################################################*/
-
 
 /*#################################################################################*\
     
@@ -30,17 +33,17 @@
 \*#################################################################################*/
 include <BOSL2/std.scad>
 
-$fn = 72;
-
-part = "test";   // [box, lid, button, test]
+part = "window";   // [box, lid, button, window, test]
 
 battery_count = 6;
 buffer = 5;
 wall = 2;
 corner = 8;
-
+iwall_fudge = 1.25;
 
 module hide_variables () {}  // variables below hidden from Customizer
+
+$fn = 72;
 
 2buffer = buffer*2;
 battery = [18, 65, 18];
@@ -55,7 +58,7 @@ icorner2 = 1.5 * corner;      //Non std value to make fillet for screw post
 
 battery_space = [(battery_count * (battery.x + buffer))+ buffer, battery.y + 2 * buffer, battery.z + buffer];
 
-ibox = [pcb.x + wall + battery_space.x, battery_space.y, battery_space.z];
+ibox = [pcb.x + wall + buffer/2 + battery_space.x, battery_space.y, battery_space.z];
 box = [ibox.x + wall * 2, ibox.y + wall * 2, ibox.z];
 stacker = [box.x, box.y, buffer];
 
@@ -65,7 +68,7 @@ screw_hole = 2; //dia
 
 // Key Locations
 pcb_lift = floor + 3; 
-internal_wall_loc = [-ibox.x/2 + pcb.x + wall/2 + 1, 0, floor]; 
+internal_wall_loc = [-ibox.x/2 + pcb.x + wall/2 + iwall_fudge, 0, floor]; 
 pcb_center = [-ibox.x/2 + pcb.x/2, 0, floor + pcb_lift + pcb.z/2];
 pcb_ctr_left = pcb_center + [-pcb.x/2 , 0, 0];
 pcb_back_left = pcb_ctr_left + [0, pcb.y/2, 0];
@@ -78,7 +81,7 @@ pcb_bot = pcb_center + [0, 0, -pcb.z/2];
 pcb_hole = 1.7;
 pcb_post = [5, undef, pcb_lift]; // d, undef, l
 pcb_post_rounding = [-3, 1.5];     // rounding1, rounding2
-pcb_front_post_loc = pcb_front_left_floor + [10 + pcb_hole/2, 3.65 + pcb_hole/2, 0];
+pcb_front_post_loc = pcb_front_left_floor + [11 + pcb_hole/2, 3.5 + pcb_hole/2, 0];
 pcb_back_post_loc = pcb_back_left_floor + [13 + pcb_hole/2, -(10.25 + pcb_hole/2), 0];
 
 pcb_support = [4, 4.5, pcb_lift];
@@ -93,12 +96,13 @@ pcb_back_stop_loc  = pcb_back_left_floor  + [2,  1.25, 0];
 
 battery_center = [ibox.x/2 - battery_space.x/2, 0, buffer + battery.z/2];
 
+echo2([box]);
 
 // Hole sizes and positions  
 // usbC and lightning connectors centered under usbA connectors
 led = [11, 5, 5];
 led_loc = pcb_back_left + [0, -6.85, led.z/2 - 1];
-led2 = [4, 17, floor + 1];
+led2 = [4, 17, floor + 0.1];
 led2_loc = pcb_back_post_loc + [0, -(led2.y/2 + 7.5), -(floor + 0.1)]; 
 
 usbA = [10.2, 13.5, 6];
@@ -114,13 +118,13 @@ lightning_loc = [usbA_loc2.x, usbA_loc2.y, pcb_bot.z - lightning.z/2];
 
 buttonhole = [4, 6, 4];
 buttonhole_loc = [-ibox.x/2 + 19.5, ibox.y/2, pcb_center.z];
-button = [3.5, 13, 3.5];
-button_support = [8, 4, pcb_lift + 2.75];
-button_support_loc = [-ibox.x/2 + 19.5, pcb_back_left.y + 4, floor];
+button = [3.5, 3.5, 6.5];  // button.z is doubled in the button() module. 
+button_support = [8, 8, pcb_lift + 5];
+button_support_loc = [-ibox.x/2 + 19.5, pcb_back_left.y + 7, floor];
 button_channel = [4.1, 12, 4.1];
 button_channel_loc = button_support_loc + [0, 0, pcb_lift - pcb.z] ;
 
-echo2([button_channel_loc]);
+
 
 /*#################################################################################*\
     
@@ -137,6 +141,10 @@ if (part == "button") {
 
 if (part == "lid") {
    lid();
+}
+
+if (part == "window") {
+   window();
 }
 
 if (part == "test") {
@@ -164,7 +172,10 @@ module box() {
 }
 
 module button() {
-    cuboid(button, rounding = 1.5, edges = BACK);
+    cuboid([button.x * 2, button.x * 2, 1], rounding = 2, edges = "Z", anchor = BOT);
+    up(1) cuboid(button, rounding = -0.5, edges = BOT, anchor = BOT);
+     up(1 + button.z) cuboid(button, rounding = 1.5, edges = TOP, anchor = BOT);
+
 }
 
 module floor() {
@@ -172,7 +183,6 @@ module floor() {
 }
 
 module shell() {
-    
     difference() {
         union() {
             floor();
@@ -265,8 +275,8 @@ module internal_wall () {
         move(internal_wall_loc) cuboid([wall, ibox.y, ibox.z + stacker.z], anchor = BOT);
         union() {
             move(pcb_center) {   // Wire pass-through holes
-                move([pcb.x/2 + wall,   pcb.y/2, 3]) #xcyl(d = 2.5, h = 5);
-                move([pcb.x/2 + wall,  -pcb.y/2, 3]) #xcyl(d = 2.5, h = 5);
+                move([pcb.x/2 + wall,   pcb.y/2, 6]) #xcyl(d = 3, h = 5);
+                move([pcb.x/2 + wall,  -pcb.y/2, 6]) #xcyl(d = 3, h = 5);
             }
         }
      }
@@ -290,7 +300,7 @@ module stacker_with_posts(is_male) { //stacker with screw posts
 
 
 module stacker(is_male) {	// Interface ring to stack box
-     //note non-standard irounding (icorner2) to provide screw post fillet.
+     //note non-standard irounding (icorner2) in male stacker to provide screw post fillet.
 
 	A = [box.x - 2 * wall/4, box.y - 2 * wall/4];
 	B = [box.x - 4 * wall/4, box.y - 4 * wall/4];
@@ -298,7 +308,7 @@ module stacker(is_male) {	// Interface ring to stack box
 	
 	if (is_male) {
 		rect_tube ( size1 = A, size2 = B, isize = C,
-			h=stacker.z, rounding = corner, irounding = icorner2);
+			h=stacker.z, rounding = corner, irounding = icorner2); //non-standard irounding
 	} else {
         difference() {
             rect_tube(h = stacker.z, size = [stacker.x, stacker.y], wall = wall, 
@@ -315,6 +325,18 @@ module pcb(showbox) {
         if($preview) color_this("green") #cuboid(volume1, anchor = BOT);
     }
 }
+
+module window() {
+    /*  ******************* IMPORTANT ********************
+        This part must be printed with transparent filament. 
+        Use 4 perimeters, ZERO infill, ZERO bottom layers
+        and 4 top layers with a rectilinear top fill pattern.
+    */
+    cuboid (led2 + [2, 2, pcb_lift - floor], anchor = BOT);
+    up (led2.z + pcb_lift - floor) 
+        cuboid (led2 - [0.1, 0.1, 0], rounding = 1, edges = "Z", anchor = BOT);
+}
+
 
 module echo2(arg) {
 	echo(str("\n\n", arg, "\n\n" ));
