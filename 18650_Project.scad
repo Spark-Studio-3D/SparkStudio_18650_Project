@@ -33,7 +33,7 @@
 \*#################################################################################*/
 include <BOSL2/std.scad>
 
-part = "window";   // [box, lid, button, window, test]
+part = "lid";   // [box, lid, button, window, test]
 
 battery_count = 6;
 buffer = 5;
@@ -64,7 +64,7 @@ stacker = [box.x, box.y, buffer];
 
 screw_post = [6, undef, stacker.z]; // post_dia, undef, post.z
 screw_spacing = [ibox.x - wall - 5, ibox.y - wall - 5];
-screw_hole = 2; //dia
+screw_hole = 2.5; //dia
 
 // Key Locations
 pcb_lift = floor + 3; 
@@ -235,7 +235,7 @@ module lid() {
     difference () {
         floor();
         grid_copies(n = 2, spacing = screw_spacing)
-             #cyl(h = screw_post.z, d = screw_hole, anchor = BOT);
+             #cyl(h = screw_post.z, d = screw_hole + 1, anchor = BOT);
     } 
     up(floor) stacker(false);
       
