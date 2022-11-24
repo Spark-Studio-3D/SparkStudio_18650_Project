@@ -1,6 +1,6 @@
 # SparkStudio_18650_Project
  
-This OpenSCAD file renters .stl files for Mike Nolley's 18650 based USB charger project at Spark Studio Salem <https://sparkstudiosalem.com/>.
+This OpenSCAD file renders .stl files for Mike Nolley's 18650 based USB charger project at Spark Studio Salem <https://sparkstudiosalem.com/>.
 
 The box accomodates an IP5328 charge management pcb available from:
 
@@ -10,7 +10,7 @@ The box accomodates an IP5328 charge management pcb available from:
 
 ...as well as many other vendors on EBay and AliExpress. Sadly, the manufcturer's name and part number are not in evidence.  Match the image in PCB_Photo.png for positive identification.
 
-It can be configured for any number of 18650 cells up to the size limits of 
+This box can be configured for any number of 18650 cells up to the size limits of 
 your 3d printer.
 
 The BOSL2 Library is required for this project.  <https://github.com/revarbat/BOSL2>
