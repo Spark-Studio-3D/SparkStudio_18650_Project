@@ -1,4 +1,4 @@
-/*#################################################################################*\
+/* ***************************************************************************** *\
    18650_Project.scad
 	-----------------------------------------------------------------------------
 
@@ -13,10 +13,10 @@
 	Copyright 				©2022 by Richard A. Milewski
     License                 Mozilla Public License v2.0
 
-\*#################################################################################*/
+\* ***************************************************************************** */
 
 
-/*#################################################################################*\
+/* ***************************************************************************** *\
     
     NOTES
 
@@ -24,13 +24,13 @@
     over or under extrusion. It should be set to provide a snug fit for the pcb.
     Decrease it for a tighter fit, increase it to loosen the fit.
 
-\*#################################################################################*/
+\* ***************************************************************************** */
 
-/*#################################################################################*\
+/* ***************************************************************************** *\
     
     CONFIGURATION
 
-\*#################################################################################*/
+\* ***************************************************************************** */
 include <BOSL2/std.scad>
 
 part = "lid";   // [box, lid, button, window, test]
@@ -96,7 +96,6 @@ pcb_back_stop_loc  = pcb_back_left_floor  + [2,  1.25, 0];
 
 battery_center = [ibox.x/2 - battery_space.x/2, 0, buffer + battery.z/2];
 
-echo2([box]);
 
 // Hole sizes and positions  
 // usbC and lightning connectors centered under usbA connectors
@@ -126,11 +125,11 @@ button_channel_loc = button_support_loc + [0, 0, pcb_lift - pcb.z] ;
 
 
 
-/*#################################################################################*\
+/* ***************************************************************************** *\
     
     Main
 
-\*#################################################################################*/
+\* ***************************************************************************** */
 if (part == "box") {
     box();
 }
@@ -154,11 +153,11 @@ if (part == "test") {
 }
 
 
-/*#################################################################################*\
+/* ***************************************************************************** *\
     
     Modules
 
-\*#################################################################################*/
+\* ***************************************************************************** */
 
 
 module box() {
@@ -235,7 +234,7 @@ module lid() {
     difference () {
         floor();
         grid_copies(n = 2, spacing = screw_spacing)
-             #cyl(h = screw_post.z, d = screw_hole + 1, anchor = BOT);
+            cyl(h = screw_post.z, d = screw_hole + 1, anchor = BOT);
     } 
     up(floor) stacker(false);
       
@@ -262,7 +261,7 @@ module battery_bay() {
                 move (battery_center) left(battery_space.x/2 + battery.x/2) {
                 for (i = [1 : battery_count]) {
                     right(buffer * i + battery.x * i-1)
-                        #battery();  
+                        battery();  
                     }
                 }
             }
@@ -275,8 +274,8 @@ module internal_wall () {
         move(internal_wall_loc) cuboid([wall, ibox.y, ibox.z + stacker.z], anchor = BOT);
         union() {
             move(pcb_center) {   // Wire pass-through holes
-                move([pcb.x/2 + wall,   pcb.y/2, 6]) #xcyl(d = 3, h = 5);
-                move([pcb.x/2 + wall,  -pcb.y/2, 6]) #xcyl(d = 3, h = 5);
+                move([pcb.x/2 + wall,   pcb.y/2, 6]) xcyl(d = 3, h = 5);
+                move([pcb.x/2 + wall,  -pcb.y/2, 6]) xcyl(d = 3, h = 5);
             }
         }
      }
@@ -292,7 +291,7 @@ module stacker_with_posts(is_male) { //stacker with screw posts
                     color("white") cyl(h = screw_post.z, d = screw_post.x, rounding1 = screw_post.x/2, anchor = BOT);
                 }
                 grid_copies(n = 2, spacing = screw_spacing)
-                #cyl(h = screw_post.z, d = screw_hole, anchor = BOT);
+                cyl(h = screw_post.z, d = screw_hole, anchor = BOT);
 
             }
         }
@@ -322,7 +321,7 @@ module stacker(is_male) {	// Interface ring to stack box
 module pcb(showbox) {
     volume1 = showbox ? pcb_box : pcb;
     move(pcb_center) {
-        if($preview) color_this("green") #cuboid(volume1, anchor = BOT);
+        if($preview) color_this("green") cuboid(volume1, anchor = BOT);
     }
 }
 
