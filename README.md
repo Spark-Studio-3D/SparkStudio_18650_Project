@@ -10,6 +10,8 @@ The box accomodates an IP5328 charge management board available from:
 
 ...as well as many other vendors on EBay and AliExpress. Sadly, the manufcturer's name and part number are not in evidence.  Match the image in PCB_Photo.png for positive identification.
 
+![PCB Image](/repository/assets/PCB_Photo.png?raw=true "Charge Controller PCB")
+
 This box can be configured for any number of 18650 cells up to the size limits of
 your 3d printer.
 
