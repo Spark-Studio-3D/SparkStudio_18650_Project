@@ -33,9 +33,11 @@
 \* ***************************************************************************** */
 include <BOSL2/std.scad>
 
-part = "lid";   // [box, lid, button, window, test]
+part = "box";           // [box, lid, button, window, test]
+make_window = false;    // [true, false]
 
-battery_count = 6;
+battery_count = 4;
+battery_spacing = 1;
 buffer = 5;
 wall = 2;
 corner = 8;
@@ -56,9 +58,9 @@ floor = wall;
 icorner = corner - wall;
 icorner2 = 1.5 * corner;      //Non std value to make fillet for screw post
 
-battery_space = [(battery_count * (battery.x + buffer))+ buffer, battery.y + 2 * buffer, battery.z + buffer];
+battery_space = [(battery_count * (battery.x + battery_spacing)) + buffer * 2, battery.y + 2 * buffer, battery.z + buffer];
 
-ibox = [pcb.x + wall + buffer/2 + battery_space.x, battery_space.y, battery_space.z];
+ibox = [pcb.x + wall + battery_space.x, battery_space.y, battery_space.z];
 box = [ibox.x + wall * 2, ibox.y + wall * 2, ibox.z];
 stacker = [box.x, box.y, buffer];
 
@@ -192,7 +194,9 @@ module shell() {
         union() {
             color("red") {
                 move(led_loc) xcyl(d = led.z, l = led.x);
-                move(led2_loc)  cuboid(led2, rounding = 1,   edges = "Z", anchor = BOT);
+                if (make_window == true) {
+                    move(led2_loc)  cuboid(led2, rounding = 1,   edges = "Z", anchor = BOT);
+                }
                 move(usbA_loc1) cuboid(usbA, rounding = 1,   edges = "X");
                 move(usbA_loc2) cuboid(usbA, rounding = 1,   edges = "X");
                 move(usbC_loc)  cuboid(usbC, rounding = 0.5, edges = "X");
@@ -252,18 +256,12 @@ module battery_bay() {
     up(floor){
         difference() {
             union() {
-                move([battery_center.x, battery_center.y, floor*2]) {
-                    back(box.y/4) cuboid([battery_space.x, wall, battery_space.z/2]);
-                    fwd(box.y/4)  cuboid([battery_space.x, wall, battery_space.z/2]);
-                }
+                move([battery_center.x, battery_center.y, floor*2]) 
+                    ycopies(box.y/2) cuboid([battery_space.x, wall, battery_space.z/2]);
             }
             union() {
-                move (battery_center) left(battery_space.x/2 + battery.x/2) {
-                for (i = [1 : battery_count]) {
-                    right(buffer * i + battery.x * i-1)
-                        battery();  
-                    }
-                }
+                move (battery_center) 
+                xcopies(battery_spacing + battery.x, n = battery_count) # battery();  
             }
         }
     }
@@ -278,23 +276,22 @@ module internal_wall () {
                 move([pcb.x/2 + wall,  -pcb.y/2, 6]) xcyl(d = 3, h = 5);
             }
         }
-     }
+    }
 }
 
 module stacker_with_posts(is_male) { //stacker with screw posts
-     
-        up(box.z + floor){
-            difference () {
-                union() {
-                    stacker(is_male);
-                    grid_copies(n = 2, spacing = screw_spacing)
-                    color("white") cyl(h = screw_post.z, d = screw_post.x, rounding1 = screw_post.x/2, anchor = BOT);
-                }
+    up(box.z + floor){
+        difference () {
+            union() {
+                stacker(is_male);
                 grid_copies(n = 2, spacing = screw_spacing)
-                cyl(h = screw_post.z, d = screw_hole, anchor = BOT);
-
+                color("white") cyl(h = screw_post.z, d = screw_post.x, rounding1 = screw_post.x/2, anchor = BOT);
             }
+            grid_copies(n = 2, spacing = screw_spacing)
+            cyl(h = screw_post.z, d = screw_hole, anchor = BOT);
+
         }
+    }
 }
 
 
