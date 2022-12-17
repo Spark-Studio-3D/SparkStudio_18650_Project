@@ -107,9 +107,9 @@ led2 = [4, 17, floor + 0.1];
 led2_loc = pcb_back_post_loc + [0, -(led2.y/2 + 7.5), -(floor + 0.1)]; 
 
 usbA = [10.2, 13.5, 6];
-usbAlift = 1.44; //connector height above pcb
-usbA_loc1 =  pcb_back_left + [0, -14.75 - usbA.y/2, usbA.z/2 + usbAlift];
-usbA_loc2 =  pcb_front_left + [0, 7.5 + usbA.y/2, usbA.z/2 + usbAlift];
+usbAlift = 3; //connector height above pcb
+usbA_loc1 =  pcb_back_left + [0, -13.25 - usbA.y/2, usbA.z/2 + usbAlift];
+usbA_loc2 =  pcb_front_left + [0, 9 + usbA.y/2, usbA.z/2 + usbAlift];
 
 usbC = [7.5, 9.2, 3.3];
 usbC_loc =  [usbA_loc1.x, usbA_loc1.y , pcb_bot.z - usbC.z/2]; 
