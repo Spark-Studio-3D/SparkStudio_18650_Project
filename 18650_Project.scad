@@ -37,7 +37,7 @@ part = "box";           // [box, lid, button, window, test]
 make_window = false;    // [true, false]
 
 battery_count = 4;
-battery_spacing = 1;
+battery_spacing = 0.4;
 buffer = 5;
 wall = 2;
 corner = 8;
