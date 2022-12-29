@@ -33,8 +33,11 @@
 \* ***************************************************************************** */
 include <BOSL2/std.scad>
 
-part = "box";           // [box, lid, button, window, test]
-make_window = false;    // [true, false]
+part = "box";       // [box, lid, button, window, test]
+// Add Charging Indication Window
+window = true;      // [true, false]
+// Batteries are spot welded together  
+welded = false;     // [true, false]
 
 battery_count = 4;
 battery_spacing = 1;
@@ -52,15 +55,14 @@ battery = [18, 65, 18];
 pcb = [30, 53.5, 1.3];
 pcb_box = [30, 54, 11.4];
 
-
 floor = wall;
 
 icorner = corner - wall;
 icorner2 = 1.5 * corner;      //Non std value to make fillet for screw post
 
 battery_space = [(battery_count * (battery.x + battery_spacing)) + buffer * 2, battery.y + 2 * buffer, battery.z + buffer];
-
 ibox = [pcb.x + wall + battery_space.x, battery_space.y, battery_space.z];
+battery_center = [ibox.x/2 - battery_space.x/2, 0, buffer + battery.z/2];
 box = [ibox.x + wall * 2, ibox.y + wall * 2, ibox.z];
 stacker = [box.x, box.y, buffer];
 
@@ -96,7 +98,6 @@ pcb_stop = [8, 2, pcb_lift + 4];
 pcb_front_stop_loc = pcb_front_left_floor + [2, -1.25, 0];
 pcb_back_stop_loc  = pcb_back_left_floor  + [2,  1.25, 0];
 
-battery_center = [ibox.x/2 - battery_space.x/2, 0, buffer + battery.z/2];
 
 
 // Hole sizes and positions  
@@ -108,8 +109,8 @@ led2_loc = pcb_back_post_loc + [0, -(led2.y/2 + 7.5), -(floor + 0.1)];
 
 usbA = [10.2, 13.5, 6];
 usbAlift = 1.44; //connector height above pcb
-usbA_loc1 =  pcb_back_left + [0, -14.75 - usbA.y/2, usbA.z/2 + usbAlift];
-usbA_loc2 =  pcb_front_left + [0, 7.5 + usbA.y/2, usbA.z/2 + usbAlift];
+usbA_loc1 =  pcb_back_left + [0, -14.25 - usbA.y/2, usbA.z/2 + usbAlift];
+usbA_loc2 =  pcb_front_left + [0, 8 + usbA.y/2, usbA.z/2 + usbAlift];
 
 usbC = [7.5, 9.2, 3.3];
 usbC_loc =  [usbA_loc1.x, usbA_loc1.y , pcb_bot.z - usbC.z/2]; 
@@ -132,23 +133,23 @@ button_channel_loc = button_support_loc + [0, 0, pcb_lift - pcb.z] ;
     Main
 
 \* ***************************************************************************** */
-if (part == "box") {
+if(part == "box") {
     box();
 }
 
-if (part == "button") {
+if(part == "button") {
     button();
 }
 
-if (part == "lid") {
+if(part == "lid") {
    lid();
 }
 
-if (part == "window") {
+if(part == "window") {
    window();
 }
 
-if (part == "test") {
+if(part == "test") {
     left_half(s = 200, x = internal_wall_loc.x + 2)
     bottom_half(s = 200, z = box.z * .75)
     box();
@@ -165,18 +166,15 @@ if (part == "test") {
 module box() {
     shell();
     internal_wall();
-    if (part != "test") battery_bay();
+    if(part != "test") battery_bay();
     color_this("dodgerblue") stacker_with_posts(true);
-    if ($preview && part != "test") pcb(false);
-    //pcb(false);
-    
+    if($preview && part != "test") pcb(false);
 }
 
 module button() {
     cuboid([button.x * 2, button.x * 2, 1], rounding = 2, edges = "Z", anchor = BOT);
     up(1) cuboid(button, rounding = -0.5, edges = BOT, anchor = BOT);
      up(1 + button.z) cuboid(button, rounding = 1.5, edges = TOP, anchor = BOT);
-
 }
 
 module floor() {
@@ -194,7 +192,7 @@ module shell() {
         union() {
             color("red") {
                 move(led_loc) xcyl(d = led.z, l = led.x);
-                if (make_window == true) {
+                if(window) {
                     move(led2_loc)  cuboid(led2, rounding = 1,   edges = "Z", anchor = BOT);
                 }
                 move(usbA_loc1) cuboid(usbA, rounding = 1,   edges = "X");
@@ -257,11 +255,16 @@ module battery_bay() {
         difference() {
             union() {
                 move([battery_center.x, battery_center.y, floor*2]) 
-                    ycopies(box.y/2) cuboid([battery_space.x, wall, battery_space.z/2]);
+                   ycopies(box.y/2) cuboid([battery_space.x, wall, battery_space.z/2]);
             }
             union() {
-                move (battery_center) 
-                xcopies(battery_spacing + battery.x, n = battery_count) # battery();  
+                move (battery_center) {
+                    xcopies(battery_spacing + battery.x, n = battery_count) #battery();  
+                    if(welded) {
+                        down(battery.z/2) 
+                            ycopies(box.y/2) cuboid([battery_space.x - battery.x * 1.5, wall, battery_space.z/2], anchor = BOT);
+                    }
+                }
             }
         }
     }
@@ -302,7 +305,7 @@ module stacker(is_male) {	// Interface ring to stack box
 	B = [box.x - 4 * wall/4, box.y - 4 * wall/4];
 	C = [box.x - 2 * wall,   box.y - 2 * wall];
 	
-	if (is_male) {
+	if(is_male) {
 		rect_tube ( size1 = A, size2 = B, isize = C,
 			h=stacker.z, rounding = corner, irounding = icorner2); //non-standard irounding
 	} else {
