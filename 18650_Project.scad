@@ -8,7 +8,7 @@
 
 	Version:                1.0
 	Creation Date:          10 Nov 2022
-	Modification Date:      
+	Modification Date:      28 Dec 2022
 	Email:                  richard+spark@milewski.org
 	Copyright 				©2022 by Richard A. Milewski
     License                 Mozilla Public License v2.0
