@@ -40,7 +40,7 @@ window = true;      // [true, false]
 welded = false;     // [true, false]
 
 battery_count = 4;
-battery_spacing = 0.4;
+battery_spacing = 1;
 buffer = 5;
 wall = 2;
 corner = 8;
