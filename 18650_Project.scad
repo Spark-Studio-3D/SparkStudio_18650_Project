@@ -37,7 +37,11 @@ part = "box";       // [box, lid, button, window, test]
 // Add Charging Indication Window
 window = true;      // [true, false]
 // Batteries are spot welded together  
-welded = false;     // [true, false]
+welded = false;     // [true, false]   
+// Show phantom PCB
+phPCB = false;    // [true, false]
+// Show phantom batteries
+phBat = false;  // [true, false]
 
 battery_count = 4;
 battery_spacing = 1;
@@ -49,6 +53,7 @@ iwall_fudge = 1.25;
 module hide_variables () {}  // variables below hidden from Customizer
 
 $fn = 72;
+epsilon = 0.1 ;
 
 2buffer = buffer*2;
 battery = [18, 65, 18];
@@ -104,8 +109,8 @@ pcb_back_stop_loc  = pcb_back_left_floor  + [2,  1.25, 0];
 // usbC and lightning connectors centered under usbA connectors
 led = [11, 5, 5];
 led_loc = pcb_back_left + [0, -6.85, led.z/2 - 1];
-led2 = [4, 17, floor + 0.1];
-led2_loc = pcb_back_post_loc + [0, -(led2.y/2 + 7.5), -(floor + 0.1)]; 
+led2 = [4, 17, floor + 2 * epsilon];
+led2_loc = pcb_back_post_loc + [0, -(led2.y/2 + 7.5), -floor - epsilon ]; 
 
 usbA = [10.2, 13.5, 6];
 usbAlift = 1.44; //connector height above pcb
@@ -164,11 +169,11 @@ if(part == "test") {
 
 
 module box() {
-    shell();
+    color_this("lightgrey") shell();
     internal_wall();
     if(part != "test") battery_bay();
     color_this("dodgerblue") stacker_with_posts(true);
-    if($preview && part != "test") pcb(false);
+    if($preview && part != "test" && phPCB) pcb();
 }
 
 module button() {
@@ -190,20 +195,20 @@ module shell() {
         }
         //shell holes
         union() {
-            color("red") {
+            color_this("red") {
                 move(led_loc) xcyl(d = led.z, l = led.x);
                 if(window) {
-                    move(led2_loc)  cuboid(led2, rounding = 1,   edges = "Z", anchor = BOT);
+                    move(led2_loc)  cuboid(led2, rounding = 1,  edges = "Z", anchor = BOT);
+                    move(buttonhole_loc) cuboid(buttonhole, rounding = 1, edges = "Y");           
                 }
                 move(usbA_loc1) cuboid(usbA, rounding = 1,   edges = "X");
                 move(usbA_loc2) cuboid(usbA, rounding = 1,   edges = "X");
                 move(usbC_loc)  cuboid(usbC, rounding = 0.5, edges = "X");
                 move(lightning_loc) cuboid(lightning, rounding = 0.5, edges = "X");
-                move(buttonhole_loc) cuboid(buttonhole, rounding = 1, edges = "Y");           
             }
         }
     }
-    color("dodgerblue") {
+    color_this("dodgerblue") {
         difference() {
             union () {
                 move (pcb_front_post_loc) 
@@ -225,9 +230,11 @@ module shell() {
         move (pcb_front_stop_loc) cuboid(pcb_stop, anchor = BOT);
         move (pcb_back_stop_loc)  cuboid(pcb_stop, anchor = BOT);
 
-        difference() {
-            move (button_support_loc) cuboid(button_support, anchor = BOT);
-            move (button_channel_loc) color("red") cuboid(button_channel, anchor = BOT);
+        if (window) {
+            difference() {
+                move (button_support_loc) cuboid(button_support, anchor = BOT);
+                move (button_channel_loc) color_this("red") cuboid(button_channel, anchor = BOT);
+            }
         }
     }
 }
@@ -239,11 +246,6 @@ module lid() {
             cyl(h = screw_post.z, d = screw_hole + 1, anchor = BOT);
     } 
     up(floor) stacker(false);
-      
-       
-           
-        
-
 }
 
 module battery() {
@@ -259,10 +261,11 @@ module battery_bay() {
             }
             union() {
                 move (battery_center) {
-                    xcopies(battery_spacing + battery.x, n = battery_count) #battery();  
+                    xcopies(battery_spacing + battery.x, n = battery_count) 
+                        if (phBat) #battery();  else battery();     
                     if(welded) {
                         down(battery.z/2) 
-                            ycopies(box.y/2) cuboid([battery_space.x - battery.x * 1.5, wall, battery_space.z/2], anchor = BOT);
+                            ycopies(box.y/2) cuboid([battery_space.x - battery.x * 1.5, wall + epsilon, battery_space.z/2], anchor = BOT);
                     }
                 }
             }
@@ -288,11 +291,10 @@ module stacker_with_posts(is_male) { //stacker with screw posts
             union() {
                 stacker(is_male);
                 grid_copies(n = 2, spacing = screw_spacing)
-                color("white") cyl(h = screw_post.z, d = screw_post.x, rounding1 = screw_post.x/2, anchor = BOT);
+                color_this("white") cyl(h = screw_post.z, d = screw_post.x, rounding1 = screw_post.x/2, anchor = BOT);
             }
             grid_copies(n = 2, spacing = screw_spacing)
             cyl(h = screw_post.z, d = screw_hole, anchor = BOT);
-
         }
     }
 }
@@ -318,10 +320,9 @@ module stacker(is_male) {	// Interface ring to stack box
 	}
 }
 
-module pcb(showbox) {
-    volume1 = showbox ? pcb_box : pcb;
+module pcb() {
     move(pcb_center) {
-        if($preview) color_this("green") cuboid(volume1, anchor = BOT);
+        if($preview) #cuboid(pcb, anchor = BOT);
     }
 }
 
