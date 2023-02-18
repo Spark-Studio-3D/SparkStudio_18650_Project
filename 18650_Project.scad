@@ -8,7 +8,7 @@
 
 	Version:                1.0
 	Creation Date:          10 Nov 2022
-	Modification Date:      28 Dec 2022
+	Modification Date:      21 Jan 2023
 	Email:                  richard+spark@milewski.org
 	Copyright 				©2022 by Richard A. Milewski
     License                 Mozilla Public License v2.0
@@ -199,8 +199,8 @@ module shell() {
                 move(led_loc) xcyl(d = led.z, l = led.x);
                 if(window) {
                     move(led2_loc)  cuboid(led2, rounding = 1,  edges = "Z", anchor = BOT);
-                    move(buttonhole_loc) cuboid(buttonhole, rounding = 1, edges = "Y");           
                 }
+                move(buttonhole_loc) cuboid(buttonhole, rounding = 1, edges = "Y");           
                 move(usbA_loc1) cuboid(usbA, rounding = 1,   edges = "X");
                 move(usbA_loc2) cuboid(usbA, rounding = 1,   edges = "X");
                 move(usbC_loc)  cuboid(usbC, rounding = 0.5, edges = "X");
@@ -230,11 +230,9 @@ module shell() {
         move (pcb_front_stop_loc) cuboid(pcb_stop, anchor = BOT);
         move (pcb_back_stop_loc)  cuboid(pcb_stop, anchor = BOT);
 
-        if (window) {
-            difference() {
-                move (button_support_loc) cuboid(button_support, anchor = BOT);
-                move (button_channel_loc) color_this("red") cuboid(button_channel, anchor = BOT);
-            }
+        difference() {
+            move (button_support_loc) cuboid(button_support, anchor = BOT);
+            move (button_channel_loc) color_this("red") cuboid(button_channel, anchor = BOT);
         }
     }
 }
