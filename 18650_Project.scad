@@ -36,12 +36,17 @@ include <BOSL2/std.scad>
 part = "box";       // [box, lid, button, window, test]
 // Add Charging Indication Window
 window = true;      // [true, false]
+
+// Battery Type
+batt_type = "other";   // [18650, other]
 // Batteries are spot welded together  
-welded = false;     // [true, false]   
+welded = false;     // [true, false]  
+
 // Show phantom PCB
 phPCB = false;    // [true, false]
 // Show phantom batteries
 phBat = false;  // [true, false]
+
 
 battery_count = 4;
 battery_spacing = 1;
@@ -171,7 +176,7 @@ if(part == "test") {
 module box() {
     color_this("lightgrey") shell();
     internal_wall();
-    if(part != "test") battery_bay();
+    if(part != "test" && batt_type != "other") #battery_bay();
     color_this("dodgerblue") stacker_with_posts(true);
     if($preview && part != "test" && phPCB) pcb();
 }
